@@ -7,6 +7,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * The UrlMapping class represents a mapping entity that stores information
+ * about unique URL codes and associated URLs with an expiration date. <br>
+ * It is used to store a list of URLs mapped to a unique code.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,9 +20,6 @@ import java.util.List;
 public class UrlMapping {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @Column(unique = true, nullable = false)
     private String uniqueCode;
 

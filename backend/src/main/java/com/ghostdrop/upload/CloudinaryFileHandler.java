@@ -3,6 +3,7 @@ package com.ghostdrop.upload;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.ghostdrop.entity.UrlMapping;
+import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class CloudinaryFileHandler implements FileHandler {
     private UrlMappingService mappingService;
 
     @Override
-    public String upload(MultipartFile[] multipartFiles, String folderName) {
+    public CodeResponse upload(MultipartFile[] multipartFiles, String folderName) {
         Map<Object, Object> utils = new HashMap<>();
         utils.put("folder", folderName);
         utils.put("use_filename", true);
@@ -32,6 +33,8 @@ public class CloudinaryFileHandler implements FileHandler {
         List<String> fileUrls = new ArrayList<>();
 
         try {
+            String uniqueCode = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+
             for (MultipartFile file : multipartFiles) {
                 String originalFilename = file.getOriginalFilename();
                 if (originalFilename != null && originalFilename.contains(".")) {
@@ -39,8 +42,7 @@ public class CloudinaryFileHandler implements FileHandler {
                 }
 
                 // Set the public_id to the filename without the extension
-                utils.put("public_id", originalFilename);
-
+                utils.put("public_id", originalFilename + uniqueCode);
                 Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), utils);
 
                 System.out.println(uploadResult.get("public_id"));
@@ -48,12 +50,11 @@ public class CloudinaryFileHandler implements FileHandler {
                 fileUrls.add(url);
             }
 
-            String uniqueCode = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 
             UrlMapping urlMapping = mappingService.save(uniqueCode, fileUrls);
             log.info("{} save url", urlMapping.toString());
 
-            return uniqueCode;
+            return new CodeResponse(uniqueCode);
         } catch (IOException e) {
             for (String secureUrl : fileUrls) {
                 delete(secureUrl);
@@ -75,12 +76,6 @@ public class CloudinaryFileHandler implements FileHandler {
             throw new RuntimeException("Error deleting file: " + e);
         }
     }
-
-    @Override
-    public UrlMapping getFiles(String uniqueCode) {
-        return mappingService.get(uniqueCode);
-    }
-
 
     private String extractPublicIdFromUrl(String secureUrl) {
         // "https://res.cloudinary.com/deepkcloud/image/upload/v1726127710/anonymous/Resume.pdf.pdf"

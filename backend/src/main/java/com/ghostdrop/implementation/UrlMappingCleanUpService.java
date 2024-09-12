@@ -4,6 +4,7 @@ import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.repository.UrlMappingRepository;
 import com.ghostdrop.upload.FileHandler;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * CleanUp service uses the cron job and cleans the expired urls and files.
+ * It cleans both the cloud files and the database.
+ */
 @Component
+@Slf4j
 public class UrlMappingCleanUpService {
 
     @Autowired
@@ -20,19 +26,24 @@ public class UrlMappingCleanUpService {
     @Autowired
     private FileHandler fileHandler;
 
+    /**
+     * Function that runs every 1 minute to check for the expired urls.
+     */
     @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void deleteExpiredUrlMappings() {
-        List<UrlMapping> expiredMappings = mappingRepository.findByExpiryDateBefore(LocalDateTime.now());
+        List<UrlMapping> expiredMappings = this.mappingRepository.findByExpiryDateBefore(LocalDateTime.now());
+
         if (!expiredMappings.isEmpty()) {
+            // Iterating over the expiredMappings.
             for (UrlMapping mapping : expiredMappings) {
                 for (String secureUrl : mapping.getUrls()) {
-                    fileHandler.delete(secureUrl);
+                    this.fileHandler.delete(secureUrl);
                 }
-                mappingRepository.delete(mapping);
+                this.mappingRepository.delete(mapping);
             }
 
-            System.out.println("Cleaned up");
+            log.info("{} codes cleaned up!!", expiredMappings.size());
         }
     }
 }
