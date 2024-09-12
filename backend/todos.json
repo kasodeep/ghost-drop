@@ -1,0 +1,5 @@
+{
+  "1": "Add proper request and response types",
+  "2": "Add error handling to avoid crashes",
+  "3": "Do we need delete as an endpoint? (No, Cron will take care + Anonymous)"
+}
