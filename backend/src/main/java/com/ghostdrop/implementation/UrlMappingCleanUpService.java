@@ -32,6 +32,8 @@ public class UrlMappingCleanUpService {
     @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void deleteExpiredUrlMappings() {
+        log.info("Running the Clean Up Service!!");
+
         List<UrlMapping> expiredMappings = this.mappingRepository.findByExpiryDateBefore(LocalDateTime.now());
 
         if (!expiredMappings.isEmpty()) {
@@ -42,8 +44,8 @@ public class UrlMappingCleanUpService {
                 }
                 this.mappingRepository.delete(mapping);
             }
-
-            log.info("{} codes cleaned up!!", expiredMappings.size());
         }
+
+        log.warn("{} mappings have been cleaned!", expiredMappings.size());
     }
 }

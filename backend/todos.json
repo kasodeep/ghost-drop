@@ -1,9 +1,6 @@
 {
-  "2": "Add error handling to avoid crashes",
   "3": "Do we need delete as an endpoint? (No, Cron will take care + Anonymous)",
-  "4": "Take care of cron, routes and test using postman",
-  "6": "documentation",
+  "4": "Take care of cron.",
   "8": "We provide fronted the url",
-  "9": "Add logging to different functions.",
-  "10": "Don't forget to remove warnings."
+  "9": "Start With Frontend!!"
 }

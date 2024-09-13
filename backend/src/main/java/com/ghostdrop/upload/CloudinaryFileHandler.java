@@ -2,7 +2,9 @@ package com.ghostdrop.upload;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.ghostdrop.entity.UrlMapping;
+import com.ghostdrop.exceptions.FileDeleteFailedException;
+import com.ghostdrop.exceptions.FileUploadFailedException;
+import com.ghostdrop.exceptions.InValidUrlException;
 import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * CloudinaryFileHandler is the magic place where the actual logic is implemented.
+ *
+ * @author Kasodariya Deep
+ */
 @Service
 @Slf4j
 public class CloudinaryFileHandler implements FileHandler {
@@ -25,74 +32,89 @@ public class CloudinaryFileHandler implements FileHandler {
 
     @Override
     public CodeResponse upload(MultipartFile[] multipartFiles, String folderName) {
+        // utils needed while uploading the files.
         Map<Object, Object> utils = new HashMap<>();
         utils.put("folder", folderName);
         utils.put("use_filename", true);
         utils.put("unique_filename", false);
 
+        // list to store the uploaded files urls.
         List<String> fileUrls = new ArrayList<>();
 
         try {
-            String uniqueCode = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+            String uniqueCode = generateUniqueCode();
 
             for (MultipartFile file : multipartFiles) {
-                String originalFilename = file.getOriginalFilename();
-                if (originalFilename != null && originalFilename.contains(".")) {
-                    originalFilename = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
-                }
+                String fileNameWithExtension = file.getOriginalFilename();
+                String fileNameWithoutExtension = getFileNameWithoutExtension(fileNameWithExtension);
+                utils.put("public_id", fileNameWithoutExtension + uniqueCode);
 
-                // Set the public_id to the filename without the extension
-                utils.put("public_id", originalFilename + uniqueCode);
-                Map<String, Object> uploadResult = cloudinary.uploader().upload(file.getBytes(), utils);
+                Map<String, Object> uploadResult = cloudinary
+                        .uploader()
+                        .upload(file.getBytes(), utils);
 
-                System.out.println(uploadResult.get("public_id"));
+                // getting the secured url to access the file.
                 String url = (String) uploadResult.get("secure_url");
+                log.info("File uploaded with name {}", fileNameWithExtension);
                 fileUrls.add(url);
             }
 
-
-            UrlMapping urlMapping = mappingService.save(uniqueCode, fileUrls);
-            log.info("{} save url", urlMapping.toString());
-
+            mappingService.save(uniqueCode, fileUrls);
             return new CodeResponse(uniqueCode);
         } catch (IOException e) {
-            for (String secureUrl : fileUrls) {
-                delete(secureUrl);
-            }
-            throw new RuntimeException("Image Uploading Failed!!");
+            log.error("Deleting due to error in uploading!");
+            for (String secureUrl : fileUrls) delete(secureUrl);
+            throw new FileUploadFailedException("Failed to upload the images!");
         }
     }
 
     public boolean delete(String secureUrl) {
         try {
             String publicId = extractPublicIdFromUrl(secureUrl);
-            Map<Object, Object> result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+            Map<Object, Object> result = cloudinary
+                    .uploader()
+                    .destroy(publicId, ObjectUtils.emptyMap());
 
             if (!"ok".equals(result.get("result"))) {
-                throw new RuntimeException("Failed to delete file from Cloudinary: " + secureUrl);
+                throw new FileDeleteFailedException("Failed to delete file from Cloudinary: " + secureUrl);
             }
+
+            log.info("File with url {} deleted", secureUrl);
             return true;
         } catch (Exception e) {
-            throw new RuntimeException("Error deleting file: " + e);
+            throw new FileDeleteFailedException("Failed to delete file from Cloudinary: " + e);
         }
     }
 
     private String extractPublicIdFromUrl(String secureUrl) {
-        // "https://res.cloudinary.com/deepkcloud/image/upload/v1726127710/anonymous/Resume.pdf.pdf"
         String[] parts = secureUrl.split("/");
-
-        // Ensure the URL contains enough parts for a valid Cloudinary URL
         if (parts.length < 2) {
-            throw new RuntimeException("Invalid Cloudinary URL: " + secureUrl);
+            throw new InValidUrlException("Invalid Cloudinary URL: " + secureUrl);
         }
 
-        // The public ID is in the last part of the URL (before the file extension)
+        String publicID = getPublicID(parts);
+        return publicID;
+    }
+
+    private String getPublicID(String[] parts) {
         String publicIdWithExtension = parts[parts.length - 1];
         String folderName = parts[parts.length - 2];
 
-        // Remove the file extension from the public ID
         int lastDotIndex = publicIdWithExtension.lastIndexOf('.');
-        publicIdWithExtension = (lastDotIndex == -1) ? publicIdWithExtension : publicIdWithExtension.substring(0, lastDotIndex);
-        return folderName + "/" + publicIdWithExtension;
+        String publicIdWithOutExtension = (lastDotIndex == -1) ? publicIdWithExtension : publicIdWithExtension.substring(0, lastDotIndex);
+
+        return folderName + "/" + publicIdWithOutExtension;
+    }
+
+    private String generateUniqueCode() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
+
+    private String getFileNameWithoutExtension(String originalFilename) {
+        if (originalFilename != null && originalFilename.contains(".")) {
+            originalFilename = originalFilename
+                    .substring(0, originalFilename.lastIndexOf('.'));
+        }
+        return originalFilename;
     }
 }

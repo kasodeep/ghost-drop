@@ -1,6 +1,5 @@
 package com.ghostdrop.upload;
 
-import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.responses.CodeResponse;
 import org.springframework.web.multipart.MultipartFile;
 

@@ -4,6 +4,7 @@ import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
 import com.ghostdrop.upload.FileHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -17,9 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
  *
  * @author Kasodariya Deep
  */
+@Slf4j
 @RestController
 @RequestMapping("api/v1/ghost-drop/anonymous")
-public class FileHandlerController {
+public class AnonymousFileHandlerController {
 
     @Autowired
     private FileHandler fileHandler;
@@ -38,6 +40,8 @@ public class FileHandlerController {
      */
     @PostMapping
     public ResponseEntity<CodeResponse> uploadFile(@RequestParam("files") MultipartFile[] multipartFiles) {
+        log.info("API endpoint /ghost-drop/anonymous: Method:POST");
+
         CodeResponse code = this.fileHandler.upload(multipartFiles, folderName);
         return new ResponseEntity<>(code, HttpStatus.CREATED);
     }
@@ -50,6 +54,8 @@ public class FileHandlerController {
      */
     @GetMapping
     public ResponseEntity<UrlMapping> getFileUrls(@RequestParam("code") String uniqueCode) {
+        log.info("API endpoint /ghost-drop/anonymous: Method:GET");
+
         UrlMapping urlMapping = this.mappingService.get(uniqueCode);
         return new ResponseEntity<>(urlMapping, HttpStatus.OK);
     }
