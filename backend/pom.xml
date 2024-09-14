@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ghostdrop</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>ghost-drop</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Ghost Drop</name>
 	<description>The app includes backend functionality for our idea Ghost Drop.</description>
