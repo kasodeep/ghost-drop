@@ -29,7 +29,7 @@ import java.util.zip.ZipOutputStream;
 public class ServerFileHandler implements FileHandler {
 
     @Value("${base.directory}")
-    private static String BASE_DIRECTORY;
+    private String BASE_DIRECTORY;
 
     @Autowired
     private UrlMappingService mappingService;
@@ -40,8 +40,9 @@ public class ServerFileHandler implements FileHandler {
         String uniqueCode = generateUniqueCode();
 
         try {
+            System.out.println("Here");
             // create directories for the new files.
-            Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode, "files");
+            Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode);
             Files.createDirectories(folderPath);
 
             // Save files to the folder.
