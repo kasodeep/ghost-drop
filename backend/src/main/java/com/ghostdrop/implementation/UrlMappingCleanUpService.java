@@ -33,15 +33,12 @@ public class UrlMappingCleanUpService {
     @Transactional
     public void deleteExpiredUrlMappings() {
         log.info("Running the Clean Up Service!!");
-
         List<UrlMapping> expiredMappings = this.mappingRepository.findByExpiryDateBefore(LocalDateTime.now());
 
         if (!expiredMappings.isEmpty()) {
             // Iterating over the expiredMappings.
             for (UrlMapping mapping : expiredMappings) {
-                for (String secureUrl : mapping.getUrls()) {
-                    this.fileHandler.delete(secureUrl);
-                }
+                this.fileHandler.delete(mapping.getUniqueCode(), mapping.getUrls());
                 this.mappingRepository.delete(mapping);
             }
         }

@@ -1,16 +1,20 @@
 package com.ghostdrop.controller;
 
-import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.responses.CodeResponse;
-import com.ghostdrop.services.UrlMappingService;
 import com.ghostdrop.upload.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Path;
 
 /**
  * The FileHandlerController provides end-points to handle the uploading and retrieval of file data.
@@ -26,16 +30,13 @@ public class AnonymousFileHandlerController {
     @Autowired
     private FileHandler fileHandler;
 
-    @Autowired
-    private UrlMappingService mappingService;
-
     @Value("${folder.anonymous}")
     private String folderName;
 
     /**
      * uploadFile uploads the files provided through the request.
      *
-     * @param multipartFiles It represents the files given through the request..
+     * @param multipartFiles It represents the files given through the request.
      * @return It returns the code associated with the uploaded files.
      */
     @PostMapping
@@ -47,16 +48,35 @@ public class AnonymousFileHandlerController {
     }
 
     /**
-     * getFileUrls returns the urls of the files associated with the code.
+     * getZipFile returns the zip file containing all files associated with the code.
      *
      * @param uniqueCode The code that is provided as the query parameter.
-     * @return It returns the list of file urls uploaded on the cloud.
+     * @return It returns the zip file as a downloadable resource.
      */
     @GetMapping
-    public ResponseEntity<UrlMapping> getFileUrls(@RequestParam("code") String uniqueCode) {
+    public ResponseEntity<Resource> getZipFile(@RequestParam("code") String uniqueCode) {
         log.info("API endpoint /ghost-drop/anonymous: Method:GET");
 
-        UrlMapping urlMapping = this.mappingService.get(uniqueCode);
-        return new ResponseEntity<>(urlMapping, HttpStatus.OK);
+        // retrieve the path to the zip file.
+        Path zipFilePath = fileHandler.getFiles(uniqueCode);
+
+        try {
+            // create a resource for the zip file.
+            Resource resource = new UrlResource(zipFilePath.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                // return the zip file as a downloadable response.
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFilePath.getFileName().toString() + "\"")
+                        .body(resource);
+            } else {
+                log.error("Zip file not found or not readable: {}", zipFilePath);
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            log.error("Error while downloading zip file for code {}: {}", uniqueCode, e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

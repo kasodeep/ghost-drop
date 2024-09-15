@@ -9,10 +9,12 @@ import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -22,6 +24,7 @@ import java.util.*;
  */
 @Service
 @Slf4j
+@ConditionalOnProperty(name = "file.handler", havingValue = "cloudinary")
 public class CloudinaryFileHandler implements FileHandler {
 
     @Autowired
@@ -40,10 +43,9 @@ public class CloudinaryFileHandler implements FileHandler {
 
         // list to store the uploaded files urls.
         List<String> fileUrls = new ArrayList<>();
+        String uniqueCode = generateUniqueCode();
 
         try {
-            String uniqueCode = generateUniqueCode();
-
             for (MultipartFile file : multipartFiles) {
                 String fileNameWithExtension = file.getOriginalFilename();
                 String fileNameWithoutExtension = getFileNameWithoutExtension(fileNameWithExtension);
@@ -61,29 +63,38 @@ public class CloudinaryFileHandler implements FileHandler {
 
             mappingService.save(uniqueCode, fileUrls);
             return new CodeResponse(uniqueCode);
+
         } catch (IOException e) {
             log.error("Deleting due to error in uploading!");
-            for (String secureUrl : fileUrls) delete(secureUrl);
+            delete(uniqueCode, fileUrls);
             throw new FileUploadFailedException("Failed to upload the images!");
         }
     }
 
-    public boolean delete(String secureUrl) {
+    @Override
+    public void delete(String uniqueCode, List<String> fileUrls) {
         try {
-            String publicId = extractPublicIdFromUrl(secureUrl);
-            Map<Object, Object> result = cloudinary
-                    .uploader()
-                    .destroy(publicId, ObjectUtils.emptyMap());
+            for (String secureUrl : fileUrls) {
+                String publicId = extractPublicIdFromUrl(secureUrl);
 
-            if (!"ok".equals(result.get("result"))) {
-                throw new FileDeleteFailedException("Failed to delete file from Cloudinary: " + secureUrl);
+                Map<Object, Object> result = cloudinary
+                        .uploader()
+                        .destroy(publicId, ObjectUtils.emptyMap());
+
+                if (!"ok".equals(result.get("result"))) {
+                    throw new FileDeleteFailedException("Failed to delete file from Cloudinary: " + secureUrl);
+                }
+                log.info("File with url: {} deleted", secureUrl);
             }
 
-            log.info("File with url {} deleted", secureUrl);
-            return true;
         } catch (Exception e) {
-            throw new FileDeleteFailedException("Failed to delete file from Cloudinary: " + e);
+            throw new FileDeleteFailedException("Failed to delete files from Cloudinary: " + e);
         }
+    }
+
+    @Override
+    public Path getFiles(String uniqueCode) {
+        return null;
     }
 
     private String extractPublicIdFromUrl(String secureUrl) {
