@@ -38,4 +38,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ApiResponse> handleInValidUrlException(InValidUrlException exception) {
         return new ResponseEntity<>(new ApiResponse(exception.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(GeneralError.class)
+    public final ResponseEntity<ApiResponse> handleGeneralError(GeneralError error) {
+        return new ResponseEntity<>(new ApiResponse(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
+

@@ -1,7 +1,7 @@
 package com.ghostdrop.controller;
 
 import com.ghostdrop.responses.CodeResponse;
-import com.ghostdrop.upload.FileHandler;
+import com.ghostdrop.handler.FileHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -74,9 +76,11 @@ public class AnonymousFileHandlerController {
                 log.error("Zip file not found or not readable: {}", zipFilePath);
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
+
         } catch (Exception e) {
             log.error("Error while downloading zip file for code {}: {}", uniqueCode, e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
         }
     }
 }

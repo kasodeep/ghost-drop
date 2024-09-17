@@ -1,10 +1,18 @@
-package com.ghostdrop.upload;
+package com.ghostdrop.handler;
 
 import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.exceptions.FileDeleteFailedException;
 import com.ghostdrop.exceptions.FileUploadFailedException;
+import com.ghostdrop.exceptions.GeneralError;
+import com.ghostdrop.exceptions.TimeExpiredException;
 import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
+import com.ghostdrop.strategy.delete.DeleteStrategy;
+import com.ghostdrop.strategy.delete.DeleteStrategySelector;
+import com.ghostdrop.strategy.upload.UploadStrategy;
+import com.ghostdrop.strategy.upload.UploadStrategySelector;
+import com.ghostdrop.utils.EncryptionUtil;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,40 +40,33 @@ public class ServerFileHandler implements FileHandler {
     private String BASE_DIRECTORY;
 
     @Autowired
+    private UploadStrategySelector uploadStrategySelector;
+
+    @Autowired
+    private DeleteStrategySelector deleteStrategySelector;
+
+    @Autowired
     private UrlMappingService mappingService;
 
     @Override
     public CodeResponse upload(MultipartFile[] multipartFiles, String folderName) {
-        List<String> fileUrls = new ArrayList<>();
+        List<String> fileUrls;
+
         String uniqueCode = generateUniqueCode();
+        Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode);
 
         try {
-            System.out.println("Here");
             // create directories for the new files.
-            Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode);
             Files.createDirectories(folderPath);
 
-            // Save files to the folder.
-            for (MultipartFile file : multipartFiles) {
-                String fileNameWithExtension = file.getOriginalFilename();
-                if (fileNameWithExtension == null) {
-                    throw new FileNotFoundException();
-                }
-
-                Path filePath = folderPath.resolve(fileNameWithExtension);
-                Files.write(filePath, file.getBytes());
-                fileUrls.add(filePath.toString());
-
-                log.info("File uploaded with name {}", fileNameWithExtension);
-            }
+            UploadStrategy strategy = uploadStrategySelector.selectStrategy(multipartFiles.length);
+            fileUrls = strategy.uploadFiles(multipartFiles, folderPath, uniqueCode);
 
             // save file URLs with the unique code.
             mappingService.save(uniqueCode, fileUrls);
             return new CodeResponse(uniqueCode);
 
-        } catch (IOException e) {
-            log.error("Deleting due to error in uploading!");
-            delete(uniqueCode, fileUrls);
+        } catch (Exception e) {
             throw new FileUploadFailedException("Failed to upload the files!");
         }
     }
@@ -73,22 +74,16 @@ public class ServerFileHandler implements FileHandler {
     @Override
     public void delete(String uniqueCode, List<String> fileUrls) {
         try {
-            // delete each file.
-            for (String fileUrl : fileUrls) {
-                Path path = Paths.get(fileUrl);
-                Files.deleteIfExists(path);
-                log.info("File with path {} deleted", fileUrl);
-            }
+            DeleteStrategy deleteStrategy = deleteStrategySelector.selectStrategy(fileUrls.size());
+            deleteStrategy.deleteFiles(fileUrls);
 
             // delete the code directory.
             Path codePath = Paths.get(BASE_DIRECTORY, "anonymous", uniqueCode);
             Files.deleteIfExists(codePath);
 
-            // delete the associated zip file if it exists
+            // delete the zip file.
             Path zipFilePath = Paths.get(BASE_DIRECTORY, uniqueCode + ".zip");
             Files.deleteIfExists(zipFilePath);
-            log.info("Zip file with path {} deleted", zipFilePath);
-
         } catch (Exception e) {
             throw new FileDeleteFailedException("Failed to delete files for code: " + uniqueCode);
         }
@@ -100,7 +95,6 @@ public class ServerFileHandler implements FileHandler {
             // create the path for the zip file.
             Path zipFilePath = Paths.get(BASE_DIRECTORY, uniqueCode + ".zip");
 
-            // check if the zip file already exists.
             if (Files.exists(zipFilePath)) {
                 log.info("Zip file already exists for code {}", uniqueCode);
                 return zipFilePath;
@@ -114,32 +108,33 @@ public class ServerFileHandler implements FileHandler {
                 throw new FileNotFoundException("No files found for the provided code.");
             }
 
+            byte[] secretKey = EncryptionUtil.generateKeyFromUniqueCode(uniqueCode);
+
             // create a zip file in the base directory.
             try (FileOutputStream fos = new FileOutputStream(zipFilePath.toFile());
                  ZipOutputStream zipOut = new ZipOutputStream(fos)) {
 
                 // add each file to the zip.
                 for (String fileUrl : fileUrls) {
-                    File fileToZip = new File(fileUrl);
-                    try (FileInputStream fis = new FileInputStream(fileToZip)) {
-                        ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-                        zipOut.putNextEntry(zipEntry);
+                    Path filePath = Paths.get(fileUrl);
+                    byte[] encryptedFileBytes = Files.readAllBytes(filePath);  // Read encrypted file as bytes
+                    byte[] decryptedBytes = EncryptionUtil.decrypt(encryptedFileBytes, secretKey);  // Decrypt the file bytes
 
-                        byte[] bytes = new byte[1024];
-                        int length;
-                        while ((length = fis.read(bytes)) >= 0) {
-                            zipOut.write(bytes, 0, length);
-                        }
-                    }
+                    // Add the decrypted file to the zip
+                    ZipEntry zipEntry = new ZipEntry(filePath.getFileName().toString());
+                    zipOut.putNextEntry(zipEntry);
+                    zipOut.write(decryptedBytes);
+                    zipOut.closeEntry();
                 }
             }
 
             log.info("Zip file created for code {}", uniqueCode);
             return zipFilePath;
 
-        } catch (IOException e) {
-            log.error("Error while creating zip file for code {}", uniqueCode, e);
-            throw new FileUploadFailedException("Failed to create zip file!");
+        } catch (EntityNotFoundException | TimeExpiredException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new GeneralError("Looks like server fault!!");
         }
     }
 

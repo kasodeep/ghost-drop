@@ -2,7 +2,7 @@ package com.ghostdrop.implementation;
 
 import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.repository.UrlMappingRepository;
-import com.ghostdrop.upload.FileHandler;
+import com.ghostdrop.handler.FileHandler;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.ghostdrop.upload;
+package com.ghostdrop.handler;
 
 import com.ghostdrop.responses.CodeResponse;
 import org.springframework.web.multipart.MultipartFile;
