@@ -9,6 +9,7 @@
 - `Automatic` resource expiry after 24 hours, which needs to be specified.
 - `Cron` cleans the expired resources, and it is destined to run every 6/12 hours.
 - Implementing `Patterns` to work with various file handlers.
+- `Files` are `encrypted` and `decrypted` during storage to promote transparency.
 
 ### Future Scope:
 
