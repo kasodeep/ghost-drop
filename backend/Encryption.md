@@ -84,3 +84,7 @@ making the encryption more secure.
 #### Padding:
 
     Ensures the file is always a multiple of the block size, regardless of its original size.
+
+### GCM (Galois Counter Mode):
+
+    We add an authentication tag to prevent altering of data. 
