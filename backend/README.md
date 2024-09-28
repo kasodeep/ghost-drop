@@ -10,10 +10,10 @@
 - `Cron` cleans the expired resources, and it is destined to run every 6/12 hours.
 - Implementing `Patterns` to work with various file handlers.
 - `Files` are `encrypted` and `decrypted` during storage to promote transparency.
+- `Multithreading` to support file uploads faster and concurrently.
 
 ### Future Scope:
 
-- Perform the `encryption` and `decryption` of the files.
 - Maybe implement `AWS` if you have an account.
 
 ### Build & Deploy:
