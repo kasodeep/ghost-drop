@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * The class provides an interface to select one of the upload strategies based on environment & no of files.
+ */
 @Service
 public class UploadStrategySelector {
 

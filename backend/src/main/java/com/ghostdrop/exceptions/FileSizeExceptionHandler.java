@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
+/**
+ * Exceptions handler to deal with file size and multipart request size exceptions.
+ *
+ * @author Kasodariya Deep
+ */
 @ControllerAdvice
 public class FileSizeExceptionHandler {
 
