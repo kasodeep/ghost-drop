@@ -3,7 +3,6 @@ package com.ghostdrop.handler;
 import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.exceptions.FileDeleteFailedException;
 import com.ghostdrop.exceptions.FileUploadFailedException;
-import com.ghostdrop.exceptions.GeneralError;
 import com.ghostdrop.exceptions.TimeExpiredException;
 import com.ghostdrop.responses.CodeResponse;
 import com.ghostdrop.services.UrlMappingService;
@@ -20,9 +19,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -134,7 +137,7 @@ public class ServerFileHandler implements FileHandler {
         } catch (EntityNotFoundException | TimeExpiredException e) {
             throw e;
         } catch (Exception e) {
-            throw new GeneralError("Looks like server fault!!");
+            throw new EntityNotFoundException("No files found for the code!!");
         }
     }
 
