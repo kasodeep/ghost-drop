@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const program = new Command();
+const ENDPOINT_URL = "https://ghost-drop.onrender.com/api/v1/ghost-drop/anonymous";
 
 // CLI Metadata
 program
@@ -31,7 +32,7 @@ program
       formData.append('files', fs.createReadStream(file));
 
       try {
-         const response = await axios.post(process.env.ENDPOINT_URL, formData, {
+         const response = await axios.post(ENDPOINT_URL, formData, {
             headers: {
                ...formData.getHeaders(),
             },
@@ -55,7 +56,7 @@ program
 
       try {
          const response = await axios({
-            url: `${process.env.ENDPOINT_URL}?code=${code}`,
+            url: `${ENDPOINT_URL}?code=${code}`,
             method: 'GET',
             responseType: 'stream',
          });
