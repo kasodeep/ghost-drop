@@ -1,5 +1,5 @@
 {
-  "name": "ghost-drop-cli",
+  "name": "cli-ghost-drop",
   "version": "1.0.0",
   "description": "CLI tool for Ghost Drop functionality!",
   "main": "bin/ghost-drop.js",
