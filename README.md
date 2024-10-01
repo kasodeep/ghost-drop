@@ -1,4 +1,3 @@
-````markdown
 # Ghost Drop CLI
 
 Ghost Drop is a file-handling service that allows users to securely upload and download files using unique codes.
@@ -13,6 +12,10 @@ The CLI tools provides an easy-to-use interface to interact with the Ghost Drop 
 - **Command-Line Interface**: Easily interact with the service directly from the terminal.
 - **Cross-Platform**: Works on any platform where Node.js is installed.
 
+## Demo
+
+![Demo Image](./image.png)
+
 ## Installation
 
 You can install the Ghost Drop CLI globally via npm:
@@ -20,7 +23,6 @@ You can install the Ghost Drop CLI globally via npm:
 ```bash
 npm install -g cli-ghost-drop
 ```
-````
 
 Once installed, you can verify the installation by running:
 

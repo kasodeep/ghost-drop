@@ -19,7 +19,7 @@ const ENDPOINT_URL = "https://ghost-drop.onrender.com/api/v1/ghost-drop/anonymou
 program
    .name('ghostdrop')
    .description('CLI for Ghost-Drop application!')
-   .version('1.0.0');
+   .version('1.1.0');
 
 // Upload Command.
 program
