@@ -76,10 +76,6 @@ ghostdrop --help
 - `download <code>`: Downloads files associated with a unique code as a ZIP archive.
 - `--help`: Shows help information for available commands.
 
-## Configuration
-
-Ghost Drop uses environment variables to manage configuration. You can set these in a `.env` file if needed.
-
 ## Contributions
 
 Contributions are welcome! To contribute:
@@ -87,12 +83,6 @@ Contributions are welcome! To contribute:
 1. Fork the repository.
 2. Create a new branch for your feature or bugfix.
 3. Submit a pull request.
-
-## License
-
-Ghost Drop CLI is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
----
 
 ### Ghost Drop Server Features
 
