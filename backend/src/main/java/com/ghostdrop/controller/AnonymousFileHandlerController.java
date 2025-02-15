@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -29,11 +27,14 @@ import java.nio.file.Path;
 @RequestMapping("api/v1/ghost-drop/anonymous")
 public class AnonymousFileHandlerController {
 
-    @Autowired
-    private FileHandler fileHandler;
+    private final FileHandler fileHandler;
 
     @Value("${folder.anonymous}")
     private String folderName;
+
+    public AnonymousFileHandlerController(FileHandler fileHandler) {
+        this.fileHandler = fileHandler;
+    }
 
     /**
      * uploadFile uploads the files provided through the request.

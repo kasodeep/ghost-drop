@@ -1,6 +1,5 @@
 package com.ghostdrop.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 

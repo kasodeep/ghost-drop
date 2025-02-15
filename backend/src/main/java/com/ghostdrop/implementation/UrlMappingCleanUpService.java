@@ -29,7 +29,7 @@ public class UrlMappingCleanUpService {
     /**
      * Function that runs every 6 hours to check for the expired urls.
      */
-    @Scheduled(cron = "0 0 0/6 * * *")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void deleteExpiredUrlMappings() {
         log.info("Running the Clean Up Service!!");

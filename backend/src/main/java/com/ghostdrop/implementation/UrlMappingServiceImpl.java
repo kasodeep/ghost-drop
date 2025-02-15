@@ -28,7 +28,7 @@ public class UrlMappingServiceImpl implements UrlMappingService {
                 .builder()
                 .uniqueCode(uniqueCode)
                 .urls(urls)
-                .expiryDate(LocalDateTime.now().plusHours(24))
+                .expiryDate(LocalDateTime.now().plusMinutes(2))
                 .build();
 
         mappingRepository.save(urlMapping);
