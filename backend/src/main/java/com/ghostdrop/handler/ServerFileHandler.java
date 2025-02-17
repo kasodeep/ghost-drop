@@ -11,6 +11,8 @@ import com.ghostdrop.strategy.delete.DeleteStrategySelector;
 import com.ghostdrop.strategy.upload.UploadStrategy;
 import com.ghostdrop.strategy.upload.UploadStrategySelector;
 import com.ghostdrop.utils.EncryptionUtil;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,10 @@ import java.util.zip.ZipOutputStream;
 @ConditionalOnProperty(name = "file.handler", havingValue = "server")
 public class ServerFileHandler implements FileHandler {
 
+    // For adding custom time metrics to metrics endpoint.
+    @Autowired
+    MeterRegistry meterRegistry;
+
     @Value("${base.directory}")
     private String BASE_DIRECTORY;
 
@@ -54,6 +60,7 @@ public class ServerFileHandler implements FileHandler {
     @Override
     public CodeResponse upload(MultipartFile[] multipartFiles, String folderName) {
         List<String> fileUrls;
+        Timer timer = meterRegistry.timer("upload");
 
         String uniqueCode = generateUniqueCode();
         Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode);
@@ -63,7 +70,9 @@ public class ServerFileHandler implements FileHandler {
             Files.createDirectories(folderPath);
 
             UploadStrategy strategy = uploadStrategySelector.selectStrategy(multipartFiles.length);
-            fileUrls = strategy.uploadFiles(multipartFiles, folderPath, uniqueCode);
+
+            // recording the time taken for uploading the files.
+            fileUrls = timer.record(() -> strategy.uploadFiles(multipartFiles, folderPath, uniqueCode));
 
             // save file URLs with the unique code.
             mappingService.save(uniqueCode, fileUrls);
