@@ -5,7 +5,5 @@ package com.ghostdrop.responses;
  *
  * @author Kasodariya Deep
  */
-public record ApiResponse(
-        String message
-) {
+public record ApiResponse(String message) {
 }

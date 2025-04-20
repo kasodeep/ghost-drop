@@ -50,10 +50,6 @@ public class ParallelStrategy implements UploadStrategy {
             futures.add(future);
         }
 
-        // wait for all uploads to complete.
-        CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        allOf.join();
-
         return futures
                 .stream()
                 .map(CompletableFuture::join)

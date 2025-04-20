@@ -12,7 +12,7 @@ import java.util.Optional;
  * UrlMappingRepository acts as an interface to interact with the database.
  */
 @Repository
-public interface UrlMappingRepository extends JpaRepository<UrlMapping, Long> {
+public interface UrlMappingRepository extends JpaRepository<UrlMapping, String> {
 
     /**
      * findByUniqueCode returns the UrlMapping associated with the code provided in the args.

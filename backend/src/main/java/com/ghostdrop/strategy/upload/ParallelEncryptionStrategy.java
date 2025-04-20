@@ -25,12 +25,10 @@ public class ParallelEncryptionStrategy implements UploadStrategy {
     @Override
     public List<String> uploadFiles(MultipartFile[] files, Path folderPath, String uniqueCode) {
         byte[] secretKey;
+
         try {
             secretKey = EncryptionUtil.generateKeyFromUniqueCode(uniqueCode);
         } catch (Exception e) {
-            log.error("{} error occurred", e.getClass());
-            log.error("message: {}", e.getMessage());
-
             throw new FileUploadFailedException("Failed to upload the files!");
         }
 

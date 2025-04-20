@@ -11,5 +11,4 @@ public class GhostDropAdminApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(GhostDropAdminApplication.class, args);
 	}
-
 }
