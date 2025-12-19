@@ -19,8 +19,11 @@ import java.util.List;
 @Service
 public class UrlMappingServiceImpl implements UrlMappingService {
 
-    @Autowired
-    UrlMappingRepository mappingRepository;
+    private final UrlMappingRepository mappingRepository;
+
+    public UrlMappingServiceImpl(UrlMappingRepository mappingRepository) {
+        this.mappingRepository = mappingRepository;
+    }
 
     @Override
     public UrlMapping save(String uniqueCode, List<String> urls) {

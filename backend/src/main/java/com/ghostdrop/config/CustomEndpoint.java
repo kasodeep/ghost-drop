@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * The class is a custom endpoint for exposing some metrics.
+ * Not related to health, info and internal boot.
  */
 @Component
 @Endpoint(id = "custom-point")

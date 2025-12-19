@@ -1,6 +1,5 @@
 package com.ghostdrop.strategy.upload;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +15,20 @@ public class UploadStrategySelector {
     @Value("${parallel.threshold}")
     private Integer parallelStrategyThreshold;
 
-    @Autowired
-    private SequentialStrategy sequentialStrategy;
+    private final SequentialStrategy sequentialStrategy;
 
-    @Autowired
-    private ParallelStrategy parallelStrategy;
+    private final ParallelStrategy parallelStrategy;
 
-    @Autowired
-    private ParallelEncryptionStrategy parallelEncryptionStrategy;
+    private final ParallelEncryptionStrategy parallelEncryptionStrategy;
 
-    @Autowired
-    private SequentialEncryptionStrategy sequentialEncryptionStrategy;
+    private final SequentialEncryptionStrategy sequentialEncryptionStrategy;
+
+    public UploadStrategySelector(SequentialStrategy sequentialStrategy, ParallelStrategy parallelStrategy, ParallelEncryptionStrategy parallelEncryptionStrategy, SequentialEncryptionStrategy sequentialEncryptionStrategy) {
+        this.sequentialStrategy = sequentialStrategy;
+        this.parallelStrategy = parallelStrategy;
+        this.parallelEncryptionStrategy = parallelEncryptionStrategy;
+        this.sequentialEncryptionStrategy = sequentialEncryptionStrategy;
+    }
 
     public UploadStrategy selectStrategy(int numberOfFiles) {
         if (numberOfFiles > parallelStrategyThreshold) {

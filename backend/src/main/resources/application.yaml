@@ -1,0 +1,95 @@
+spring:
+  application:
+    name: Ghost Drop
+
+  datasource:
+    url: "jdbc:postgresql://ep-white-sun-a186u3ym-pooler.ap-southeast-1.aws.neon.tech/ghost_drop?sslmode=require&channel_binding=require"
+    username: financedb_owner
+    password:
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  task:
+    scheduling:
+      enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 500MB
+
+  jmx:
+    enabled: true
+
+  # ===============================
+  # Spring Boot Admin Client
+  # ===============================
+  boot:
+    admin:
+      client:
+        url: http://localhost:8888
+
+# ===============================
+# Ghost-Drop Custom Config
+# ===============================
+
+folder:
+  anonymous: anonymous
+
+base:
+  directory: uploads
+
+file:
+  handler: server
+
+encryption:
+  enabled: true
+
+parallel:
+  threshold: 5
+
+# ===============================
+# Actuator Configuration
+# ===============================
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: health,info,metrics,prometheus,custom-point
+    jmx:
+      exposure:
+        include: health,info,metrics
+
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+
+  info:
+    env:
+      enabled: true
+
+  management:
+    metrics:
+      distribution:
+        percentiles-histogram:
+          http.server.requests: true
+        percentiles:
+          http.server.requests: 0.5,0.95,0.99
+
+# ===============================
+# Info Endpoint Custom Data
+# ===============================
+
+info:
+  app:
+    name: ${spring.application.name}
+    links:
+      github: https://github.com/kasodeep/ghost-drop

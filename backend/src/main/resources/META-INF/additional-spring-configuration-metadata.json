@@ -1,8 +1,0 @@
-{
-  "properties": [
-    {
-      "name": "file.handler",
-      "type": "java.lang.String",
-      "description": "Provides the handler to use for the file uploader."
-  }
-] }

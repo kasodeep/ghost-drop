@@ -38,8 +38,8 @@ public class UrlMappingCleanUpService {
         if (!expiredMappings.isEmpty()) {
             // Iterating over the expiredMappings.
             for (UrlMapping mapping : expiredMappings) {
-                this.fileHandler.delete(mapping.getUniqueCode(), mapping.getUrls());
-                this.mappingRepository.delete(mapping);
+                fileHandler.delete(mapping.getUniqueCode(), mapping.getUrls());
+                mappingRepository.delete(mapping);
             }
         }
 

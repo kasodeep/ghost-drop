@@ -1,5 +1,6 @@
 package com.ghostdrop.handler;
 
+import com.ghostdrop.config.gauges.UploadActivityGauge;
 import com.ghostdrop.entity.UrlMapping;
 import com.ghostdrop.exceptions.FileDeleteFailedException;
 import com.ghostdrop.exceptions.FileUploadFailedException;
@@ -11,11 +12,12 @@ import com.ghostdrop.strategy.delete.DeleteStrategySelector;
 import com.ghostdrop.strategy.upload.UploadStrategy;
 import com.ghostdrop.strategy.upload.UploadStrategySelector;
 import com.ghostdrop.utils.EncryptionUtil;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -31,126 +33,161 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/**
- * ServerFileHandler stores files locally on the server and handles upload, retrieval, and deletion.
- *
- * @author Kasodariya
- */
 @Service
 @Slf4j
 @ConditionalOnProperty(name = "file.handler", havingValue = "server")
 public class ServerFileHandler implements FileHandler {
 
-    // For adding custom time metrics to metrics endpoint.
-    @Autowired
-    MeterRegistry meterRegistry;
+    private final MeterRegistry meterRegistry;
+    private final UploadStrategySelector uploadStrategySelector;
+    private final DeleteStrategySelector deleteStrategySelector;
+    private final UrlMappingService mappingService;
 
     @Value("${base.directory}")
     private String BASE_DIRECTORY;
 
-    @Autowired
-    private UploadStrategySelector uploadStrategySelector;
+    /* ----------- Metrics ----------- */
+    private final Timer uploadTimer;
+    private final Timer zipTimer;
+    private final Counter uploadedFilesCounter;
+    private final Counter uploadFailureCounter;
+    private final DistributionSummary zipSizeSummary;
+    private final UploadActivityGauge uploadActivityGauge;
 
-    @Autowired
-    private DeleteStrategySelector deleteStrategySelector;
+    public ServerFileHandler(
+            MeterRegistry meterRegistry,
+            UploadStrategySelector uploadStrategySelector,
+            DeleteStrategySelector deleteStrategySelector,
+            UrlMappingService mappingService,
+            UploadActivityGauge uploadActivityGauge
+    ) {
+        this.meterRegistry = meterRegistry;
+        this.uploadStrategySelector = uploadStrategySelector;
+        this.deleteStrategySelector = deleteStrategySelector;
+        this.mappingService = mappingService;
+        this.uploadActivityGauge = uploadActivityGauge;
 
-    @Autowired
-    private UrlMappingService mappingService;
+        this.uploadTimer = meterRegistry.timer("ghostdrop.upload.duration");
+        this.zipTimer = meterRegistry.timer("ghostdrop.zip.duration");
+
+        this.uploadedFilesCounter =
+                meterRegistry.counter("ghostdrop.files.uploaded");
+
+        this.uploadFailureCounter =
+                meterRegistry.counter("ghostdrop.upload.failed");
+
+        this.zipSizeSummary =
+                meterRegistry.summary("ghostdrop.zip.size.bytes");
+    }
 
     @Override
     public CodeResponse upload(MultipartFile[] multipartFiles, String folderName) {
-        List<String> fileUrls;
-        Timer timer = meterRegistry.timer("upload");
 
         String uniqueCode = generateUniqueCode();
         Path folderPath = Paths.get(BASE_DIRECTORY, folderName, uniqueCode);
 
+        uploadActivityGauge.increment();
         try {
-            // create directories for the new files.
             Files.createDirectories(folderPath);
 
             UploadStrategy strategy = uploadStrategySelector.selectStrategy(multipartFiles.length);
 
-            // recording the time taken for uploading the files.
-            fileUrls = timer.record(() -> strategy.uploadFiles(multipartFiles, folderPath, uniqueCode));
+            List<String> fileUrls = uploadTimer.record(
+                    () -> strategy.uploadFiles(multipartFiles, folderPath, uniqueCode)
+            );
 
-            // save file URLs with the unique code.
+            uploadedFilesCounter.increment(multipartFiles.length);
+
             mappingService.save(uniqueCode, fileUrls);
             return new CodeResponse(uniqueCode);
 
         } catch (Exception e) {
+            uploadFailureCounter.increment();
             throw new FileUploadFailedException("Failed to upload the files!");
+        } finally {
+            uploadActivityGauge.decrement();
         }
     }
 
     @Override
     public void delete(String uniqueCode, List<String> fileUrls) {
         try {
-            DeleteStrategy deleteStrategy = deleteStrategySelector.selectStrategy(fileUrls.size());
+            DeleteStrategy deleteStrategy =
+                    deleteStrategySelector.selectStrategy(fileUrls.size());
+
             deleteStrategy.deleteFiles(fileUrls);
 
-            // delete the code directory.
-            Path codePath = Paths.get(BASE_DIRECTORY, "anonymous", uniqueCode);
-            Files.deleteIfExists(codePath);
+            Files.deleteIfExists(
+                    Paths.get(BASE_DIRECTORY, "anonymous", uniqueCode)
+            );
 
-            // delete the zip file.
-            Path zipFilePath = Paths.get(BASE_DIRECTORY, uniqueCode + ".zip");
-            Files.deleteIfExists(zipFilePath);
+            Files.deleteIfExists(
+                    Paths.get(BASE_DIRECTORY, uniqueCode + ".zip")
+            );
+
         } catch (Exception e) {
-            throw new FileDeleteFailedException("Failed to delete files for code: " + uniqueCode);
+            throw new FileDeleteFailedException(
+                    "Failed to delete files for code: " + uniqueCode
+            );
         }
     }
 
     @Override
     public Path getFiles(String uniqueCode) {
         try {
-            // create the path for the zip file.
             Path zipFilePath = Paths.get(BASE_DIRECTORY, uniqueCode + ".zip");
 
             if (Files.exists(zipFilePath)) {
-                log.info("Zip file already exists for code {}", uniqueCode);
                 return zipFilePath;
             }
 
-            // retrieve file URLs from mappingService using the unique code.
             UrlMapping urlMapping = mappingService.get(uniqueCode);
             List<String> fileUrls = urlMapping.getUrls();
 
             if (fileUrls == null || fileUrls.isEmpty()) {
-                throw new FileNotFoundException("No files found for the provided code.");
+                throw new FileNotFoundException("No files found.");
             }
 
-            byte[] secretKey = EncryptionUtil.generateKeyFromUniqueCode(uniqueCode);
+            byte[] secretKey =
+                    EncryptionUtil.generateKeyFromUniqueCode(uniqueCode);
 
-            // create a zip file in the base directory.
-            try (FileOutputStream fos = new FileOutputStream(zipFilePath.toFile());
-                 ZipOutputStream zipOut = new ZipOutputStream(fos)) {
+            zipTimer.record(() -> {
+                try (FileOutputStream fos = new FileOutputStream(zipFilePath.toFile());
+                     ZipOutputStream zipOut = new ZipOutputStream(fos)) {
 
-                // add each file to the zip.
-                for (String fileUrl : fileUrls) {
-                    Path filePath = Paths.get(fileUrl);
-                    byte[] encryptedFileBytes = Files.readAllBytes(filePath);  // Read encrypted file as bytes
-                    byte[] decryptedBytes = EncryptionUtil.decrypt(encryptedFileBytes, secretKey);  // Decrypt the file bytes
+                    for (String fileUrl : fileUrls) {
+                        Path filePath = Paths.get(fileUrl);
+                        byte[] encryptedBytes = Files.readAllBytes(filePath);
+                        byte[] decryptedBytes =
+                                EncryptionUtil.decrypt(encryptedBytes, secretKey);
 
-                    // Add the decrypted file to the zip
-                    ZipEntry zipEntry = new ZipEntry(filePath.getFileName().toString());
-                    zipOut.putNextEntry(zipEntry);
-                    zipOut.write(decryptedBytes);
-                    zipOut.closeEntry();
+                        ZipEntry zipEntry =
+                                new ZipEntry(filePath.getFileName().toString());
+
+                        zipOut.putNextEntry(zipEntry);
+                        zipOut.write(decryptedBytes);
+                        zipOut.closeEntry();
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-            }
+            });
 
-            log.info("Zip file created for code {}", uniqueCode);
+            zipSizeSummary.record(Files.size(zipFilePath));
             return zipFilePath;
 
         } catch (EntityNotFoundException | TimeExpiredException e) {
             throw e;
         } catch (Exception e) {
-            throw new EntityNotFoundException("No files found for the code!!");
+            throw new EntityNotFoundException("No files found for the code!");
         }
     }
 
     private String generateUniqueCode() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 8);
     }
 }

@@ -5,29 +5,47 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="47aab173-f86f-4410-a32e-a2dce0a5fa5e" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/application.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Admin/src/main/java/com/admin/ghostdrop/GhostDropAdminApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/Admin/src/main/java/com/admin/ghostdrop/GhostDropAdminApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/config/ProjectConfiguration.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/handler/CloudinaryFileHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/backend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/backend/mvnw" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/config/CustomEndpoint.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/config/CustomEndpoint.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/handler/ServerFileHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/handler/ServerFileHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/implementation/UrlMappingCleanUpService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/implementation/UrlMappingCleanUpService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/repository/UrlMappingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/repository/UrlMappingRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/responses/ApiResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/responses/ApiResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/ParallelEncryptionStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/ParallelEncryptionStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/ParallelStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/ParallelStrategy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/implementation/UrlMappingServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/implementation/UrlMappingServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/SequentialEncryptionStrategy.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/SequentialEncryptionStrategy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/UploadStrategySelector.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/ghostdrop/strategy/upload/UploadStrategySelector.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/META-INF/additional-spring-configuration-metadata.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
@@ -46,16 +64,18 @@
   "keyToString": {
     "RequestMappingsPanelOrder0": "0",
     "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "15",
-    "RequestMappingsPanelWidth1": "15",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.GhostDropAdminApplication.executor": "Run",
     "Spring Boot.GhostDropApplication.executor": "Run",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/night_fury_44/Codes/Ghost-Drop",
+    "last_opened_file_path": "/home/night_fury_44/Desktop/Programs/Spring Boot/ghost-drop/backend/pom.xml",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
@@ -66,7 +86,7 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="Spring Boot.GhostDropApplication">
+  <component name="RunManager" selected="Spring Boot.GhostDropAdminApplication">
     <configuration name="GhostDropAdminApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
       <module name="demo" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.admin.ghostdrop.GhostDropAdminApplication" />
@@ -97,8 +117,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.138" />
       </set>
     </attachedChunks>
   </component>
@@ -112,6 +132,15 @@
       <updated>1726129031484</updated>
       <workItem from="1745141288743" duration="306000" />
       <workItem from="1745141611142" duration="3883000" />
+      <workItem from="1756365039661" duration="67000" />
+      <workItem from="1756365112873" duration="12000" />
+      <workItem from="1756379547912" duration="1709000" />
+      <workItem from="1756452172036" duration="48000" />
+      <workItem from="1766037093905" duration="98000" />
+      <workItem from="1766122771820" duration="1576000" />
+      <workItem from="1766124359671" duration="123000" />
+      <workItem from="1766124509520" duration="82000" />
+      <workItem from="1766124606722" duration="2978000" />
     </task>
     <servers />
   </component>

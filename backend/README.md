@@ -1,8 +1,8 @@
 ### Ghost Drop:
 
 - This is the complete `backend` of an application called ghost drop.
-- The current config enables to store the files on the server in the `**uniqueCode**` folder.
-- The urls and code are stored in database using the entity `**UrlMapping**`.
+- The current config enables to store the files on the server in the `uniqueCode` folder.
+- The urls and code are stored in database using the entity `UrlMapping`.
 
 ### Features:
 
